@@ -1,3 +1,0 @@
-interface SiteConfig {
-    title: string,
-}
