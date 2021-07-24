@@ -25,8 +25,7 @@ import { parseJsonFile, exitWithError } from './common.mjs';
     await fs.writeFile(path.resolve('./build/manifest.json'), destManifestJson);
 
     // copy files
-    // const files = ['options.html'];
-    const files = [];
+    const files = ['search.html'];
     await fs.mkdir(`./build/img`);
     (await fs.readdir('./src/img')).forEach(async (file) => {
         files.push(`img/${file}`);

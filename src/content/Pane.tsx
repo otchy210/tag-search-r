@@ -23,6 +23,7 @@ const Content = styled.iframe`
     border-style: solid;
     border-width: 0 2px 2px 2px;
     border-color: #fff;
+    z-index: 0;
 `;
 
 const Tab = styled.span`
@@ -40,12 +41,13 @@ const Tab = styled.span`
     border-color: #fff;
     border-radius: 0 0 4px 4px;
     cursor: pointer;
+    z-index: 1;
 `;
 
 const Pane: FC = () => {
     const [opened, setOpened] = useState(false);
     return <Container opened={opened}>
-        <Content />
+        <Content src={chrome.extension.getURL('search.html')} />
         <Tab onClick={() => setOpened(!opened)} />
     </Container>
 };

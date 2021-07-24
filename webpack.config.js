@@ -1,6 +1,9 @@
 module.exports = {
-    mode: 'development',
-    entry: './src/content.ts',
+    mode: 'production',
+    entry: {
+        content: './src/content.ts',
+        search: './src/search.ts',
+    },
     module: {
         rules: [
             {
@@ -17,6 +20,6 @@ module.exports = {
     },
     output: {
         path: `${__dirname}/build`,
-        filename: 'content.js'
+        filename: '[name].js'
     }
 };
