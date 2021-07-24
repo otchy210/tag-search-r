@@ -1,0 +1,21 @@
+{
+    "name": "Tag Search R",
+    "version": "${version}",
+    "manifest_version": 2,
+    "description": "${description}",
+    "icons": {
+        "16": "img/icon_16.png",
+        "19": "img/icon_19.png",
+        "48": "img/icon_48.png",
+        "128": "img/icon_128.png"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://*/*"],
+            "js": ["content.js"]
+        }
+    ],
+    "web_accessible_resources": [
+        "img/*.png"
+    ]
+}
