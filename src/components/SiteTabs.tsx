@@ -1,6 +1,15 @@
 import React, { FC } from "react";
+import styled from "styled-components";
 import { siteConfigs } from "../site-config";
 import SiteTab from "./SiteTab";
+
+const TabHolder = styled.ul`
+  display: flex;
+  margin: 0;
+  padding: 0;
+  border-style: solid;
+  border-width: 0 0 1px 0;
+`;
 
 type Props = {
     selectedSite: SiteConfig;
@@ -8,10 +17,15 @@ type Props = {
 }
 
 const SiteTabs: FC<Props> = ({selectedSite, selectSite}) => {
-    return <ul>
-        {siteConfigs.map((site, index) => {
-            return <SiteTab site={site} selected={selectedSite === site} select={() => selectSite(site)} />
+    return <TabHolder>
+        {siteConfigs.map(site => {
+            return <SiteTab
+                site={site}
+                key={site.title}
+                selected={selectedSite === site}
+                select={() => selectSite(site)}
+            />
         })}
-    </ul>
+    </TabHolder>;
 };
 export default SiteTabs;
