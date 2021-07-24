@@ -2,14 +2,17 @@ module.exports = {
     mode: 'development',
     entry: './src/content.ts',
     module: {
-        rules: [{
-            test: /\.ts$/,
-            use: 'ts-loader',
-        }],
+        rules: [
+            {
+                test: /\.tsx?$/,
+                exclude: /node_modules/,
+                use: ["babel-loader"]
+            }
+        ],
     },
     resolve: {
         extensions: [
-            '.ts', '.js',
+            '.ts', '.tsx', '.js'
         ],
     },
     output: {
