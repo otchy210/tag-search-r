@@ -12,4 +12,14 @@ export const init = (site: SiteConfig): void => {
     tsrRoot.style.zIndex = '9999';
     document.body.appendChild(tsrRoot);
     ReactDom.render(<Pane />, tsrRoot);
+
+    chrome.runtime.onMessage.addListener((request, _, callback) => {
+        const {action, payload} = request;
+        switch(action) {
+            case 'SEARCH':
+                callback({'gotThisQuery': payload.query});
+                break;
+        }
+        return true; // keep message port opened until callback called
+    });
 };

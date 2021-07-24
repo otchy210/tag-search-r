@@ -9,6 +9,13 @@
         "48": "img/icon_48.png",
         "128": "img/icon_128.png"
     },
+    "permissions": [
+        "tabs"
+    ],
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
     "content_scripts": [
         {
             "matches": ["https://*/*"],
