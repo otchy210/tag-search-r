@@ -1,5 +1,3 @@
-import { test } from "./common";
+import { main } from "./main";
 
-console.log('content.ts');
-
-test();
+main();

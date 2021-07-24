@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "description": "Tag Search R",
   "scripts": {
-    "build": "node bin/build.mjs && webpack"
+    "build": "node bin/build.mjs && webpack",
+    "watch": "node bin/build.mjs && webpack --watch"
   },
   "dependencies": {},
   "devDependencies": {
