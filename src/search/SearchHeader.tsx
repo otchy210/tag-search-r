@@ -46,7 +46,7 @@ const SearchHeader: FC<Props> = ({site}) => {
             }}
         >
             {site.searchTypes.map(type => {
-                return <option value={type.key} selected={searchType === type.key}>{type.title}</option>
+                return <option value={type.key} selected={searchType === type.key}>{type.label}</option>
             })}
         </Selector>
         <QueryBox

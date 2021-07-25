@@ -2,20 +2,23 @@ import React, { FC, useEffect, useState } from "react";
 import { getStoredTabState } from "../common";
 
 const SearchResult: FC = () => {
-    const [searchState, setSeatchState] = useState('');
+    const [searchState, setSearchState] = useState('');
+    const [searchProgress, setSearchProgress] = useState('');
     useEffect(() => {
-        const updateSearchState = async () => {
+        const updateState = async () => {
             const storedState = await getStoredTabState() as any;
             const storedSearchState = storedState?.searchState ?? '';
-            setSeatchState(storedSearchState);
+            const storedSearchProgress = storedState?.searchProgress ?? '';
+            setSearchState(storedSearchState);
+            setSearchProgress(storedSearchProgress);
         };
-        updateSearchState();
+        updateState();
 
         const pingListener = (request: any) => {
             const {action} = request;
             switch(action) {
                 case 'PING_TAB_STATE_STORED':
-                    updateSearchState();
+                    updateState();
                     break;
             }
         };
@@ -25,7 +28,7 @@ const SearchResult: FC = () => {
         }
     }, []);
     return <div>
-        SearchState: {searchState}
+        SearchState: {searchState} ({searchProgress})
     </div>
 };
 
