@@ -1,4 +1,5 @@
-interface SearchConfig {
+interface SearchType {
+    key: string;
     title: string;
     url: string;
 }
@@ -7,5 +8,5 @@ interface SiteConfig {
     key: string;
     title: string;
     urlMatcher: RegExp;
-    searches: SearchConfig[];
+    searchTypes: SearchType[];
 }

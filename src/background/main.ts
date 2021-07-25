@@ -1,6 +1,8 @@
 import { MessageAction } from "../@types/Action";
 import { JsonSerializable } from "../@types/JsonSerializable";
 
+const DEBUG = false;
+
 type MessageCallback = (response: JsonSerializable) => void;
 
 const getTabId = (): Promise<number> => {
@@ -17,24 +19,29 @@ const handleTabMessage = async (message: any, callback: MessageCallback) => {
     chrome.tabs.sendMessage(tabId, message, {}, response => {
         callback(response);
     });
+    DEBUG && console.log('handleTabMessage', {tabId, message});
 };
 
 const storedTabState: {[key: number]: JsonSerializable} = {};
 const storeTabState = async (state: JsonSerializable) => {
     const tabId = await getTabId();
     storedTabState[tabId] = state;
+    DEBUG && console.log('storeTabState', {tabId, state});
 };
 const getStoredTabState = async (callback: MessageCallback) => {
     const tabId = await getTabId();
-    callback(storedTabState[tabId] ?? {});
+    const state = storedTabState[tabId] ?? {};
+    callback(state);
+    DEBUG && console.log('getStoredTabState', {tabId, state});
 };
 
 const handleRegularMessage = (action: MessageAction, payload: JsonSerializable, callback: MessageCallback) => {
-    // console.log('handleRegularMessage', {action, payload});
+    DEBUG && console.log('handleRegularMessage', {action, payload});
     switch(action) {
         case 'STORE_TAB_STATE':
             const {state} = payload as any;
             storeTabState(state);
+            callback({});
             break;
         case 'GET_STORED_TAB_STATE':
             getStoredTabState(callback);

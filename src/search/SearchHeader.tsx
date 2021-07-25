@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from "react";
 import styled from "styled-components";
-import { getStoredTabState } from "../common";
+import { getStoredTabState, sendTabMessage, updateTabState } from "../common";
 
 const Header = styled.header`
     display: flex;
@@ -24,20 +24,42 @@ interface Props {
 };
 
 const SearchHeader: FC<Props> = ({site}) => {
+    const [searchType, setSearchType] = useState('');
     const [query, setQuery] = useState('');
     useEffect(() => {
         (async () => {
             const storedState = await getStoredTabState() as any;
+            setSearchType(storedState?.searchType ?? site.searchTypes[0].key);
+            setQuery(storedState?.query ?? '');
         })();
     }, []);
     return <Header>
         <Title>{site.title}</Title>
-        <Selector>
-            {site.searches.map(search => {
-                return <option>{search.title}</option>
+        <Selector
+            onChange={e => {
+                const searchType = e.target.value;
+                setSearchType(searchType);
+                updateTabState({searchType});
+            }}
+        >
+            {site.searchTypes.map(type => {
+                return <option value={type.key} selected={searchType === type.key}>{type.title}</option>
             })}
         </Selector>
-        <QueryBox onChange={e => setQuery(e.target.value)}/>
+        <QueryBox
+            value={query}
+            onChange={e => {
+                const query = e.target.value;
+                setQuery(query)
+                updateTabState({query});
+            }}
+            onKeyDown={e => {
+                if (e.keyCode !== 13) {
+                    return;
+                }
+                sendTabMessage('SEARCH', {searchType, query})
+            }}
+        />
     </Header>
 };
 

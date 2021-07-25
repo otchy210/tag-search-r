@@ -17,7 +17,13 @@ export const init = (site: SiteConfig): void => {
         const {action, payload} = request;
         switch(action) {
             case 'SEARCH':
-                callback({'gotThisQuery': payload.query});
+                const {searchType, query} = payload;
+                const type = site.searchTypes.filter(t => t.key === searchType)[0];
+                const url = type.url
+                    .replace('{query}', encodeURIComponent(query))
+                    .replace('{page}', '1');
+                location.href = url;
+                callback();
                 break;
         }
         return true; // keep message port opened until callback called
