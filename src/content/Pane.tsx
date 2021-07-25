@@ -2,24 +2,30 @@ import React, { FC, useEffect, useState } from "react";
 import styled from "styled-components";
 import { getStoredTabState, updateTabState } from "../common";
 
-const contentHeight = '320px';
+const contentHeight = 320;
+const tabSize = 32;
 
 interface ContainerProps {
     opened: boolean;
 };
 
 const Container = styled.div<ContainerProps>`
+    position: absolute;
     display: flex;
     flex-direction: column;
-    margin-top: ${props => props.opened ? '0' : `-${contentHeight}`};
+    margin-top: ${props => props.opened ? '0' : `-${contentHeight + tabSize / 2}px`};
     transition: margin 200ms ease;
+    &:hover {
+        margin-top: ${props => props.opened ? '0' : `-${contentHeight}px`};
+    }
 `;
 
 const Content = styled.iframe`
+    position: absolute;
     border: none;
     box-sizing: border-box;
     width: 100vw;
-    height: ${contentHeight};
+    height: ${contentHeight}px;
     background-color: #999;
     border-style: solid;
     border-width: 0 2px 2px 2px;
@@ -28,6 +34,9 @@ const Content = styled.iframe`
 `;
 
 const Tab = styled.span`
+    position: absolute;
+    left: 0;
+    top: ${contentHeight}px;
     display: inline-block;
     margin-top: -2px;
     background-color: #999;
@@ -35,8 +44,8 @@ const Tab = styled.span`
     background-size: 24px;
     background-position: center;
     background-repeat: no-repeat;
-    width: 32px;
-    height: 32px;
+    width: ${tabSize}px;
+    height: ${tabSize}px;
     border-style: solid;
     border-width: 0px 2px 2px 2px;
     border-color: #fff;
