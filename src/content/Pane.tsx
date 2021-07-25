@@ -1,5 +1,6 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import styled from "styled-components";
+import { getStoredTabState, updateTabState } from "../common";
 
 const contentHeight = '320px';
 
@@ -52,9 +53,19 @@ const Pane: FC<Props> = ({site}) => {
     const [opened, setOpened] = useState(false);
     const urlBase = chrome.extension.getURL('search.html');
     const url = `${urlBase}?siteKey=${site.key}`;
+    useEffect(() => {
+        (async () => {
+            const storedState = await getStoredTabState() as any;
+            setOpened(storedState?.opened ?? false);
+        })();
+    }, []);
     return <Container opened={opened}>
         <Content src={url} />
-        <Tab onClick={() => setOpened(!opened)} />
+        <Tab onClick={() => {
+            const newOpened = !opened;
+            updateTabState({opened: newOpened})
+            setOpened(newOpened);
+        }} />
     </Container>
 };
 

@@ -1,5 +1,6 @@
-import React, { FC } from "react";
+import React, { FC, useEffect, useState } from "react";
 import styled from "styled-components";
+import { getStoredTabState } from "../common";
 
 const Header = styled.header`
     display: flex;
@@ -23,6 +24,12 @@ interface Props {
 };
 
 const SearchHeader: FC<Props> = ({site}) => {
+    const [query, setQuery] = useState('');
+    useEffect(() => {
+        (async () => {
+            const storedState = await getStoredTabState() as any;
+        })();
+    }, []);
     return <Header>
         <Title>{site.title}</Title>
         <Selector>
@@ -30,7 +37,7 @@ const SearchHeader: FC<Props> = ({site}) => {
                 return <option>{search.title}</option>
             })}
         </Selector>
-        <QueryBox />
+        <QueryBox onChange={e => setQuery(e.target.value)}/>
     </Header>
 };
 
