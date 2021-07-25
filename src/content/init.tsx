@@ -76,12 +76,23 @@ const keepSearchingIfNeeded = async (site: SiteConfig) => {
     }
     site.appendResultItems(list, additionalItems);
     const itemKeys = allItems.map(site.getItemKey);
+    const tagSummary: TagSummary = {};
+    site.tagTypes.map(tagType => tagType.key).forEach(tagKey => tagSummary[tagKey] = {});
+    const handleTagMap = (tagMap: TagMap) => {
+        site.tagTypes.map(tagType => tagType.key).forEach(tagKey => {
+            const tags = tagMap[tagKey] ?? [];
+            tags.forEach(tag => {
+                const count = tagSummary[tagKey][tag] ?? 0;
+                tagSummary[tagKey][tag] = count + 1;
+            });
+        });
+    };
     for (let i = 0; i < itemKeys.length; i++) {
         await updateTabState({searchProgress: `item: ${i+1}/${itemKeys.length}`});
         const itemKey = itemKeys[i];
-        const cachedItemTagMap = await getCachedItemTagMap(site.key, itemKey);
+        const cachedItemTagMap = await getCachedItemTagMap(site.key, itemKey) as TagMap;
         if (cachedItemTagMap) {
-            console.log({cachedItemTagMap});
+            handleTagMap(cachedItemTagMap);
             continue;
         }
         const url = site.itemUrl.replace('{itemKey}', itemKey);
@@ -92,7 +103,9 @@ const keepSearchingIfNeeded = async (site: SiteConfig) => {
             tagMap[tagType.key] = tags;
         });
         await cacheItemTagMap(site.key, itemKey, tagMap);
+        handleTagMap(tagMap);
     }
+    console.log(tagSummary);
     await updateTabState({searchState: 'done'});
 };
 

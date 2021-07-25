@@ -9,7 +9,9 @@ interface TagType {
     label: string;
 }
 
-type TagMap = {[key: string]: string[]};
+type TagMap = {[tagTypeKey: string]: string[]};
+
+type TagSummary = {[tagTypeKey: string]: {[tag: string]: number}};
 
 interface SiteConfig {
     key: string;
