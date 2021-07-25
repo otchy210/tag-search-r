@@ -29,8 +29,11 @@ const SearchHeader: FC<Props> = ({site}) => {
     useEffect(() => {
         (async () => {
             const storedState = await getStoredTabState() as any;
-            setSearchType(storedState?.searchType ?? site.searchTypes[0].key);
-            setQuery(storedState?.query ?? '');
+            const searchType = storedState?.searchType ?? site.searchTypes[0].key;
+            const query = storedState?.query ?? '';
+            setSearchType(searchType);
+            setQuery(query);
+            updateTabState({searchType, query});
         })();
     }, []);
     return <Header>
@@ -57,7 +60,7 @@ const SearchHeader: FC<Props> = ({site}) => {
                 if (e.keyCode !== 13) {
                     return;
                 }
-                sendTabMessage('SEARCH', {searchType, query})
+                sendTabMessage('SEARCH')
             }}
         />
     </Header>

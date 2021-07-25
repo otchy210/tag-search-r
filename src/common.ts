@@ -33,8 +33,8 @@ export const getStoredTabState = (): Promise<JsonSerializable> => {
     return sendMessage('GET_STORED_TAB_STATE');
 };
 
-export const updateTabState = async (stateDiff: JsonSerializable) => {
+export const updateTabState = async (stateDiff: JsonSerializable): Promise<JsonSerializable> => {
     const storedTabState = await getStoredTabState() as object;
     const newState = {...storedTabState, ...stateDiff as object};
-    storeTabState(newState);
+    return storeTabState(newState);
 };

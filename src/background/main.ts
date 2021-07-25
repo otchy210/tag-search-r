@@ -26,6 +26,7 @@ const storedTabState: {[key: number]: JsonSerializable} = {};
 const storeTabState = async (state: JsonSerializable) => {
     const tabId = await getTabId();
     storedTabState[tabId] = state;
+    chrome.tabs.sendMessage(tabId, {action: 'PING_TAB_STATE_STORED'});
     DEBUG && console.log('storeTabState', {tabId, state});
 };
 const getStoredTabState = async (callback: MessageCallback) => {

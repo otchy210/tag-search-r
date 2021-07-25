@@ -1,10 +1,61 @@
 import React from "react";
 import ReactDom from 'react-dom';
-import { log } from "../common";
+import { getStoredTabState, updateTabState } from "../common";
 import Pane from "./Pane";
 
+type MessageListenerCallback = (response?: any) => void;
+
+interface SearchContext {
+    site: SiteConfig;
+    searchType: string;
+    query: string;
+}
+
+const getSearchContextFromStoredState = (site: SiteConfig, storedState: any): SearchContext => {
+    const {searchType, query} = storedState;
+    return {
+        site,
+        searchType,
+        query
+    };
+};
+
+const getSearchContext = async (site: SiteConfig): Promise<SearchContext> => {
+    const storedState = await getStoredTabState();
+    return getSearchContextFromStoredState(site, storedState);
+};
+
+const getSearchUrl = (context: SearchContext, page: number = 1) => {
+    const {site, searchType, query} = context;
+    const type = site.searchTypes.filter(t => t.key === searchType)[0];
+    const url = type.url
+        .replace('{query}', encodeURIComponent(query))
+        .replace('{page}', String(page));
+    return url;
+};
+
+const search = async (site: SiteConfig, callback: MessageListenerCallback) => {
+    const context = await getSearchContext(site);
+    console.log({context});
+    callback();
+    location.href = getSearchUrl(context);
+    updateTabState({searchState: 'init'});
+};
+
+const keepSearchingIfNeeded = async (site: SiteConfig) => {
+    const storedState = await getStoredTabState() as any;
+    const searchState = storedState?.searchState ?? '';
+    if (searchState !== 'init') {
+        return;
+    }
+    await updateTabState({searchState: 'searching'});
+    const context = getSearchContextFromStoredState(site, storedState);
+    for (let page = 2; page <= site.maxPage; page++) {
+        const url = getSearchUrl(context, page);
+    }
+};
+
 export const init = (site: SiteConfig): void => {
-    log(`Initializing ${site.title}`);
     const tsrRoot = document.createElement('span');
     tsrRoot.style.position = 'fixed';
     tsrRoot.style.left = '0';
@@ -13,19 +64,15 @@ export const init = (site: SiteConfig): void => {
     document.body.appendChild(tsrRoot);
     ReactDom.render(<Pane site={site} />, tsrRoot);
 
-    chrome.runtime.onMessage.addListener((request, _, callback) => {
-        const {action, payload} = request;
+    chrome.runtime.onMessage.addListener((request, _, callback: MessageListenerCallback) => {
+        const {action} = request;
         switch(action) {
             case 'SEARCH':
-                const {searchType, query} = payload;
-                const type = site.searchTypes.filter(t => t.key === searchType)[0];
-                const url = type.url
-                    .replace('{query}', encodeURIComponent(query))
-                    .replace('{page}', '1');
-                location.href = url;
-                callback();
+                search(site, callback);
                 break;
         }
         return true; // keep message port opened until callback called
     });
+
+    keepSearchingIfNeeded(site);
 };

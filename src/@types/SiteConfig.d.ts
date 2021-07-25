@@ -9,4 +9,5 @@ interface SiteConfig {
     title: string;
     urlMatcher: RegExp;
     searchTypes: SearchType[];
+    maxPage: number;
 }
