@@ -105,8 +105,7 @@ const keepSearchingIfNeeded = async (site: SiteConfig) => {
         await cacheItemTagMap(site.key, itemKey, tagMap);
         handleTagMap(tagMap);
     }
-    console.log(tagSummary);
-    await updateTabState({searchState: 'done'});
+    await updateTabState({searchState: '', searchProgress: '', tagSummary});
 };
 
 export const init = (site: SiteConfig): void => {

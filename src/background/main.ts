@@ -1,7 +1,7 @@
 import { MessageAction } from "../@types/Action";
 import { JsonSerializable } from "../@types/JsonSerializable";
 
-const DEBUG = false;
+const DEBUG = true;
 
 type MessageCallback = (response: JsonSerializable) => void;
 

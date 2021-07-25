@@ -16,7 +16,7 @@ interface Props {
 const SearchPage: FC<Props> = ({site}) => {
     return <Container>
         <SearchHeader site={site} />
-        <SearchResult />
+        <SearchResult site={site}/>
     </Container>
 }
 

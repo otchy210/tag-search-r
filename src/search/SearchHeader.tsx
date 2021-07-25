@@ -60,6 +60,7 @@ const SearchHeader: FC<Props> = ({site}) => {
                 if (e.keyCode !== 13) {
                     return;
                 }
+                updateTabState({tagSummary: null});
                 sendTabMessage('SEARCH')
             }}
         />

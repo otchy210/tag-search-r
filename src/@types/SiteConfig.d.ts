@@ -11,7 +11,9 @@ interface TagType {
 
 type TagMap = {[tagTypeKey: string]: string[]};
 
-type TagSummary = {[tagTypeKey: string]: {[tag: string]: number}};
+type TagCount = {[tag: string]: number};
+
+type TagSummary = {[tagTypeKey: string]: TagCount};
 
 interface SiteConfig {
     key: string;
@@ -26,4 +28,5 @@ interface SiteConfig {
     appendResultItems: (list: HTMLElement, items: HTMLElement[]) => void;
     getItemKey: (item: HTMLElement) => string;
     getTags: (tagType: TagType, body: HTMLElement) => string[];
+    sortTags: (tagType: TagType, tagCount: TagCount) => [string, number][];
 }
