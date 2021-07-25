@@ -4,6 +4,7 @@ import { getStoredTabState, updateTabState } from "../common";
 
 const contentHeight = 320;
 const tabSize = 32;
+const bgColor = '#ccc';
 
 interface ContainerProps {
     opened: boolean;
@@ -26,7 +27,7 @@ const Content = styled.iframe`
     box-sizing: border-box;
     width: 100vw;
     height: ${contentHeight}px;
-    background-color: #999;
+    background-color: ${bgColor};
     border-style: solid;
     border-width: 0 2px 2px 2px;
     border-color: #fff;
@@ -39,7 +40,7 @@ const Tab = styled.span`
     top: ${contentHeight}px;
     display: inline-block;
     margin-top: -2px;
-    background-color: #999;
+    background-color: ${bgColor};
     background-image: url(${chrome.extension.getURL('img/icon_48.png')});
     background-size: 24px;
     background-position: center;

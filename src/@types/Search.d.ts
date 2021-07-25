@@ -3,3 +3,5 @@ interface SearchContext {
     searchType: string;
     query: string;
 }
+
+type SelectedTags = string[];
