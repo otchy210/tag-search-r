@@ -1,13 +1,9 @@
 import React, { FC } from "react";
-import { sendMessage, sendTabMessage } from "../common";
+import { sendTabMessage } from "../common";
 
-interface Props {
-    tabId: number
-};
-
-const Form: FC<Props> = ({tabId}) => {
+const Form: FC = () => {
     return <form><button onClick={() => {
-        sendTabMessage('SEARCH', tabId, {query: 'Query'}).then(response => {
+        sendTabMessage('SEARCH', {query: 'Query'}).then(response => {
             console.log('finally search pane got the response from the content script', response)
         });
     }}>Send message</button></form>;

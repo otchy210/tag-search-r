@@ -16,8 +16,8 @@ export const sendMessage = (action: string, payload?: any) => {
     });
 };
 
-export const sendTabMessage = (action: string, tabId: number, payload?: any) => {
+export const sendTabMessage = (action: string, payload?: any) => {
     return new Promise(resolve => {
-        chrome.runtime.sendMessage(chrome.runtime.id, {action, tabId, payload}, {}, resolve);
+        chrome.runtime.sendMessage(chrome.runtime.id, {action, sendTab: true, payload}, {}, resolve);
     });
 };

@@ -1,20 +1,26 @@
-export const main = () => {
-    // handle messages
+const getTabId = (): Promise<number> => {
+    return new Promise(resolve => {
+        chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+            const [tab] = tabs;
+            resolve(tab?.id ?? 0);
+        });
+    });
+};
+
+const handleMessage = async (message: any, callback: (response: any) => void) => {
+    const {action, sendTab} = message;
+    if (sendTab) {
+        const tabId = await getTabId();
+        chrome.tabs.sendMessage(tabId, message, {}, response => {
+            callback(response);
+        });
+        return;
+    }
+};
+
+export const main = (): void => {
     chrome.runtime.onMessage.addListener((message, _, callback) => {
-        const {action, tabId} = message;
-        switch (action) {
-            case 'GET_TAB_ID':
-                chrome.tabs.query({active: true, currentWindow: true}, tabs => {
-                    const [tab] = tabs;
-                    callback(tab?.id);
-                });
-                break;
-            case 'SEARCH':
-                chrome.tabs.sendMessage(tabId, message, {}, response => {
-                    callback(response);
-                });
-                break;
-        }
-        return true;
+        handleMessage(message, callback);
+        return true; // keep message port opened until callback called
     });
 };

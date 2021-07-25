@@ -1,6 +1,5 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useState } from "react";
 import styled from "styled-components";
-import { sendMessage } from "../common";
 
 const contentHeight = '320px';
 
@@ -47,16 +46,8 @@ const Tab = styled.span`
 
 const Pane: FC = () => {
     const [opened, setOpened] = useState(false);
-    const [contentSrc, setContentSrc] = useState('');
-    useEffect(() => {
-        sendMessage('GET_TAB_ID').then(tabId => {
-            const baseUrl = chrome.extension.getURL('search.html');
-            const url = `${baseUrl}?tabId=${tabId}`;
-            setContentSrc(url);
-        });
-    }, []);
     return <Container opened={opened}>
-        <Content src={contentSrc} />
+        <Content src={chrome.extension.getURL('search.html')} />
         <Tab onClick={() => setOpened(!opened)} />
     </Container>
 };
