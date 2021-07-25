@@ -10,4 +10,7 @@ interface SiteConfig {
     urlMatcher: RegExp;
     searchTypes: SearchType[];
     maxPage: number;
+    findResultList: (body: HTMLElement) => HTMLElement | null;
+    findResultItems: (list: HTMLElement) => HTMLElement[];
+    appendResultItems: (list: HTMLElement, items: HTMLElement[]) => void;
 }

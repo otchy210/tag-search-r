@@ -11,6 +11,8 @@ interface SearchContext {
     query: string;
 }
 
+const domParser = new DOMParser();
+
 const getSearchContextFromStoredState = (site: SiteConfig, storedState: any): SearchContext => {
     const {searchType, query} = storedState;
     return {
@@ -36,7 +38,6 @@ const getSearchUrl = (context: SearchContext, page: number = 1) => {
 
 const search = async (site: SiteConfig, callback: MessageListenerCallback) => {
     const context = await getSearchContext(site);
-    console.log({context});
     callback();
     location.href = getSearchUrl(context);
     updateTabState({searchState: 'init'});
@@ -49,10 +50,32 @@ const keepSearchingIfNeeded = async (site: SiteConfig) => {
         return;
     }
     await updateTabState({searchState: 'searching'});
+
+    const list = site.findResultList(document.body);
+    if (list === null) {
+        throw new Error(`Search result list not found`);
+    }
+    const allItems = site.findResultItems(list);
+    const additionalItems: HTMLElement[] = [];
     const context = getSearchContextFromStoredState(site, storedState);
     for (let page = 2; page <= site.maxPage; page++) {
         const url = getSearchUrl(context, page);
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch ${url}`);
+        }
+        const html = await response.text();
+        const subBody = domParser.parseFromString(html, 'text/html').body;
+        const subList = site.findResultList(subBody);
+        if (subList === null) {
+            continue;
+        }
+        const subItems = site.findResultItems(subList);
+        Array.prototype.push.apply(allItems, subItems);
+        Array.prototype.push.apply(additionalItems, subItems);
     }
+    site.appendResultItems(list, additionalItems);
+    await updateTabState({searchState: 'done'});
 };
 
 export const init = (site: SiteConfig): void => {
