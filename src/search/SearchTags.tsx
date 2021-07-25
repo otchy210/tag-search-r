@@ -1,5 +1,6 @@
 import React, { FC, useState } from "react";
 import styled from "styled-components";
+import { updateTabState } from "../common";
 
 const Table = styled.table`
 `;
@@ -60,6 +61,10 @@ const SearchTags: FC<Props> = ({site, tagSummary}) => {
     const isTagSelected = (tagKey: string, tag: string) => {
         const selectedTagKey = getSelectedTagKey(tagKey, tag);
         return selectedTags.includes(selectedTagKey);
+    };
+    const updateSelectedTagsState = (selectedTags: SelectedTags) => {
+        setSelectedTags(selectedTags);
+        updateTabState({selectedTags});
     }
     return <Table>
         {site.tagTypes.map(tagType => {
@@ -73,13 +78,13 @@ const SearchTags: FC<Props> = ({site, tagSummary}) => {
                                 const tagKey = tagType.key;
                                 const selectedTagKey = getSelectedTagKey(tagKey, tag);
                                 if (isTagSelected(tagKey, tag)) {
-                                    setSelectedTags(selectedTags.filter(existingTagKey => {
+                                    updateSelectedTagsState(selectedTags.filter(existingTagKey => {
                                         return existingTagKey !== selectedTagKey;
                                     }));
                                 } else {
                                     const newSelectedTags = [...selectedTags];
                                     newSelectedTags.push(selectedTagKey);
-                                    setSelectedTags(newSelectedTags);
+                                    updateSelectedTagsState(newSelectedTags);
                                 }
                             }}
                         >{tag}({count})</Label>

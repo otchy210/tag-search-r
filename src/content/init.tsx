@@ -7,6 +7,15 @@ type MessageListenerCallback = (response?: any) => void;
 
 const domParser = new DOMParser();
 
+interface FilterState {
+    fullTagSummary: TagSummary;
+    selectedTags: SelectedTags;
+}
+const filterState: FilterState = {
+    fullTagSummary: {},
+    selectedTags: []
+};
+
 const getSearchContextFromStoredState = (site: SiteConfig, storedState: any): SearchContext => {
     const {searchType, query} = storedState;
     return {
@@ -105,7 +114,55 @@ const keepSearchingIfNeeded = async (site: SiteConfig) => {
         await cacheItemTagMap(site.key, itemKey, tagMap);
         handleTagMap(tagMap);
     }
+    filterState.fullTagSummary = tagSummary;
     await updateTabState({searchState: '', searchProgress: '', tagSummary});
+};
+
+const isItemSelected = (selectedTags: SelectedTags, tagMap: TagMap): boolean => {
+    for (const selectedTag of selectedTags) {
+        const [tagKey, tag] = selectedTag.split('::');
+        if (!tagMap[tagKey].includes(tag)) {
+            return false;
+        }
+    }
+    return true;
+};
+
+const filterItems = async (site: SiteConfig) => {
+    const storedState = await getStoredTabState() as any;
+    const selectedTags = storedState?.selectedTags ?? [];
+    if (filterState.selectedTags.length === selectedTags.length) {
+        return;
+    }
+    filterState.selectedTags = selectedTags;
+    const list = site.findResultList(document.body);
+    if (list === null) {
+        throw new Error(`List not found`);
+    }
+    const items = site.findResultItems(list);
+    const shownItems = [];
+    const hiddenItems = [];
+    if (selectedTags.length === 0) {
+        items.forEach(item => {
+            shownItems.push(item);
+        });
+    } else {
+        for (const item of items) {
+            const itemKey = site.getItemKey(item);
+            const tagMap = await getCachedItemTagMap(site.key, itemKey) as TagMap;
+            if (isItemSelected(selectedTags, tagMap)) {
+                shownItems.push(item);
+            } else {
+                hiddenItems.push(item);
+            }
+        }
+    }
+    for (const item of shownItems) {
+        item.style.display = '';
+    }
+    for (const item of hiddenItems) {
+        item.style.display = 'none'
+    }
 };
 
 export const init = (site: SiteConfig): void => {
@@ -122,6 +179,9 @@ export const init = (site: SiteConfig): void => {
         switch(action) {
             case 'SEARCH':
                 search(site, callback);
+                break;
+            case 'PING_TAB_STATE_STORED':
+                filterItems(site);
                 break;
         }
         return true; // keep message port opened until callback called
