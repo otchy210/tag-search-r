@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDom from 'react-dom';
-import { getStoredTabState, updateTabState } from "../common";
+import { cacheItemTagMap, getCachedItemTagMap, getStoredTabState, updateTabState } from "../common";
 import Pane from "./Pane";
 
 type MessageListenerCallback = (response?: any) => void;
@@ -77,17 +77,21 @@ const keepSearchingIfNeeded = async (site: SiteConfig) => {
     site.appendResultItems(list, additionalItems);
     const itemKeys = allItems.map(site.getItemKey);
     for (let i = 0; i < itemKeys.length; i++) {
-        const itemKey = itemKeys[i];
         await updateTabState({searchProgress: `item: ${i+1}/${itemKeys.length}`});
+        const itemKey = itemKeys[i];
+        const cachedItemTagMap = await getCachedItemTagMap(site.key, itemKey);
+        if (cachedItemTagMap) {
+            console.log({cachedItemTagMap});
+            continue;
+        }
         const url = site.itemUrl.replace('{itemKey}', itemKey);
         const itemBody = await fetchBody(url);
-        const tagMap: {[key: string]: string[]} = {};
+        const tagMap: TagMap = {};
         site.tagTypes.forEach(tagType => {
             const tags = site.getTags(tagType, itemBody);
             tagMap[tagType.key] = tags;
         });
-        console.log(tagMap);
-        break;
+        await cacheItemTagMap(site.key, itemKey, tagMap);
     }
     await updateTabState({searchState: 'done'});
 };

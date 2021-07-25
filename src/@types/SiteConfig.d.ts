@@ -9,6 +9,8 @@ interface TagType {
     label: string;
 }
 
+type TagMap = {[key: string]: string[]};
+
 interface SiteConfig {
     key: string;
     title: string;

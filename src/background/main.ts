@@ -19,7 +19,6 @@ const handleTabMessage = async (message: any, callback: MessageCallback) => {
     chrome.tabs.sendMessage(tabId, message, {}, response => {
         callback(response);
     });
-    DEBUG && console.log('handleTabMessage', {tabId, message});
 };
 
 const storedTabState: {[key: number]: JsonSerializable} = {};
@@ -27,25 +26,52 @@ const storeTabState = async (state: JsonSerializable) => {
     const tabId = await getTabId();
     storedTabState[tabId] = state;
     chrome.tabs.sendMessage(tabId, {action: 'PING_TAB_STATE_STORED'});
-    DEBUG && console.log('storeTabState', {tabId, state});
 };
 const getStoredTabState = async (callback: MessageCallback) => {
     const tabId = await getTabId();
     const state = storedTabState[tabId] ?? {};
     callback(state);
-    DEBUG && console.log('getStoredTabState', {tabId, state});
 };
 
-const handleRegularMessage = (action: MessageAction, payload: JsonSerializable, callback: MessageCallback) => {
+const setStorage = (key: string, value: JsonSerializable) => {
+    localStorage.setItem(key, JSON.stringify(value));
+}
+const getStorage = (key: string): JsonSerializable | null => {
+    const stringValue = localStorage.getItem(key);
+    if (stringValue === null) {
+        return null;
+    }
+    return JSON.parse(stringValue);
+}
+const getCacheKey = (siteKey: string, itemKey: string): string => {
+    return `${siteKey}::${itemKey}`;
+}
+const cacheItemTagMap = async (siteKey: string, itemKey: string, tagMap: TagMap) => {
+    const cacheKey = getCacheKey(siteKey, itemKey);
+    setStorage(cacheKey, tagMap);
+};
+const getCachedItemTagMap = async (siteKey: string, itemKey: string, callback: MessageCallback) => {
+    const cacheKey = getCacheKey(siteKey, itemKey);
+    const tagMap = getStorage(cacheKey);
+    callback(tagMap);
+};
+
+const handleRegularMessage = (action: MessageAction, payload: any, callback: MessageCallback) => {
     DEBUG && console.log('handleRegularMessage', {action, payload});
     switch(action) {
         case 'STORE_TAB_STATE':
-            const {state} = payload as any;
-            storeTabState(state);
+            storeTabState(payload.state);
             callback({});
             break;
         case 'GET_STORED_TAB_STATE':
             getStoredTabState(callback);
+            break;
+        case 'CACHE_ITEM_TAG_MAP':
+            cacheItemTagMap(payload.siteKey, payload.itemKey, payload.tagMap);
+            callback({});
+            break;
+        case 'GET_CACHED_ITEM_TAG_MAP':
+            getCachedItemTagMap(payload.siteKey, payload.itemKey, callback);
             break;
     }
 };

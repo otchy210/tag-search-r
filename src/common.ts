@@ -26,3 +26,11 @@ export const updateTabState = async (stateDiff: JsonSerializable): Promise<JsonS
     const newState = {...storedTabState, ...stateDiff as object};
     return storeTabState(newState);
 };
+
+export const cacheItemTagMap = async (siteKey: string, itemKey: string, tagMap: TagMap) => {
+    return sendMessage('CACHE_ITEM_TAG_MAP', {siteKey, itemKey, tagMap});
+};
+
+export const getCachedItemTagMap = (siteKey: string, itemKey: string): Promise<JsonSerializable> => {
+    return sendMessage('GET_CACHED_ITEM_TAG_MAP', {siteKey, itemKey});
+};
