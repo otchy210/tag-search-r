@@ -4,6 +4,7 @@ interface SearchConfig {
 }
 
 interface SiteConfig {
+    key: string;
     title: string;
     urlMatcher: RegExp;
     searches: SearchConfig[];

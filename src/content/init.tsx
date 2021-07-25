@@ -11,7 +11,7 @@ export const init = (site: SiteConfig): void => {
     tsrRoot.style.top = '0';
     tsrRoot.style.zIndex = '9999';
     document.body.appendChild(tsrRoot);
-    ReactDom.render(<Pane />, tsrRoot);
+    ReactDom.render(<Pane site={site} />, tsrRoot);
 
     chrome.runtime.onMessage.addListener((request, _, callback) => {
         const {action, payload} = request;

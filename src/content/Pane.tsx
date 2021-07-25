@@ -44,10 +44,16 @@ const Tab = styled.span`
     z-index: 1;
 `;
 
-const Pane: FC = () => {
+interface Props {
+    site: SiteConfig;
+}
+
+const Pane: FC<Props> = ({site}) => {
     const [opened, setOpened] = useState(false);
+    const urlBase = chrome.extension.getURL('search.html');
+    const url = `${urlBase}?siteKey=${site.key}`;
     return <Container opened={opened}>
-        <Content src={chrome.extension.getURL('search.html')} />
+        <Content src={url} />
         <Tab onClick={() => setOpened(!opened)} />
     </Container>
 };
