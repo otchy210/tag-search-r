@@ -2,7 +2,7 @@ import React, { FC, useEffect, useState } from "react";
 import styled from "styled-components";
 import { getStoredTabState, updateTabState } from "../common";
 
-const contentHeight = 320;
+const contentHeight = 200;
 const tabSize = 32;
 const bgColor = '#ccc';
 

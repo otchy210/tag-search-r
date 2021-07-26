@@ -22,9 +22,6 @@ const Td = styled.td`
     padding: 0.25em 0.5em;
     overflow: auto;
     font-size: 0.8em;
-    & > div {
-        max-height: 120px;
-    }
 `;
 
 interface LabelProps {
@@ -70,7 +67,7 @@ const SearchTags: FC<Props> = ({site, tagSummary}) => {
         {site.tagTypes.map(tagType => {
             return <Tr>
                 <Th>{tagType.label}</Th>
-                <Td><div>
+                <Td>
                     {site.sortTags(tagType, tagSummary[tagType.key]).map(([tag, count]) => {
                         return <Label
                             selected={isTagSelected(tagType.key, tag)}
@@ -89,7 +86,7 @@ const SearchTags: FC<Props> = ({site, tagSummary}) => {
                             }}
                         >{tag}({count})</Label>
                     })}
-                </div></Td>
+                </Td>
             </Tr>;
         })}
     </Table>;
