@@ -34,3 +34,19 @@ export const cacheItemTagMap = async (siteKey: string, itemKey: string, tagMap: 
 export const getCachedItemTagMap = (siteKey: string, itemKey: string): Promise<JsonSerializable> => {
     return sendMessage('GET_CACHED_ITEM_TAG_MAP', {siteKey, itemKey});
 };
+
+export const sortTagsByCount = (tagCount: TagCount): [string, number][] => {
+    return Object.entries(tagCount).sort((left, right) => {
+        const diff = right[1] - left[1];
+        if (diff !== 0) {
+            return diff;
+        }
+        return left[0].localeCompare(right[0]);
+    });
+};
+
+export const sortTagsByLabel = (tagCount: TagCount): [string, number][] => {
+    return Object.entries(tagCount).sort((left, right) => {
+        return left[0].localeCompare(right[0]);
+    });
+};

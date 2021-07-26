@@ -33,9 +33,10 @@ const getSearchContext = async (site: SiteConfig): Promise<SearchContext> => {
 const getSearchUrl = (context: SearchContext, page: number = 1) => {
     const {site, searchType, query} = context;
     const type = site.searchTypes.filter(t => t.key === searchType)[0];
-    const url = type.url
+    const baseUrl = page === 1 ? type.urlWithoutPage ?? type.url : type.url;
+    const url = baseUrl
         .replace('{query}', encodeURIComponent(query))
-        .replace('{page}', String(page));
+        .replace('{page}', String(page - (type.usePageIndex ? 1 : 0)));
     return url;
 };
 

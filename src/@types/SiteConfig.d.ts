@@ -2,6 +2,8 @@ interface SearchType {
     key: string;
     label: string;
     url: string;
+    urlWithoutPage?: string;
+    usePageIndex?: boolean;
 }
 
 interface TagType {
@@ -20,9 +22,9 @@ interface SiteConfig {
     title: string;
     urlMatcher: RegExp;
     searchTypes: SearchType[];
-    tagTypes: TagType[];
     maxPage: number;
     itemUrl: string;
+    tagTypes: TagType[];
     findResultList: (body: HTMLElement) => HTMLElement | null;
     findResultItems: (list: HTMLElement) => HTMLElement[];
     appendResultItems: (list: HTMLElement, items: HTMLElement[]) => void;
