@@ -7,6 +7,8 @@ type MessageListenerCallback = (response?: any) => void;
 
 const domParser = new DOMParser();
 
+const DEBUG = false;
+
 interface FilterState {
     fullTagSummary: TagSummary;
     selectedTags: SelectedTags;
@@ -66,10 +68,12 @@ const keepSearchingIfNeeded = async (site: SiteConfig) => {
     await updateTabState({searchState: 'searching'});
 
     const list = site.findResultList(document.body);
+    DEBUG && console.log('site.findResultList', list);
     if (list === null) {
         throw new Error(`Search result list not found`);
     }
     const allItems = site.findResultItems(list);
+    DEBUG && console.log('site.findResultItems', allItems);
     const additionalItems: HTMLElement[] = [];
     const context = getSearchContextFromStoredState(site, storedState);
     for (let page = 2; page <= site.maxPage; page++) {
@@ -77,15 +81,18 @@ const keepSearchingIfNeeded = async (site: SiteConfig) => {
         const url = getSearchUrl(context, page);
         const pageBody = await fetchBody(url);
         const pageList = site.findResultList(pageBody);
+        DEBUG && console.log(`site.findResultList (page: ${page})`, list);
         if (pageList === null) {
             continue;
         }
         const pageItems = site.findResultItems(pageList);
+        DEBUG && console.log(`site.findResultItems (page: ${page})`, pageItems);
         Array.prototype.push.apply(allItems, pageItems);
         Array.prototype.push.apply(additionalItems, pageItems);
     }
     site.appendResultItems(list, additionalItems);
     const itemKeys = allItems.map(site.getItemKey);
+    DEBUG && console.log({itemKeys});
     const tagSummary: TagSummary = {};
     site.tagTypes.map(tagType => tagType.key).forEach(tagKey => tagSummary[tagKey] = {});
     const handleTagMap = (tagMap: TagMap) => {
