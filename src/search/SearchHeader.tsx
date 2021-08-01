@@ -19,6 +19,10 @@ const QueryBox = styled.input`
     flex-grow: 1;
 `;
 
+const FilterBox = styled.input`
+    flex-grow: 1;
+`;
+
 interface Props {
     site: SiteConfig
 };
@@ -26,6 +30,7 @@ interface Props {
 const SearchHeader: FC<Props> = ({site}) => {
     const [searchType, setSearchType] = useState('');
     const [query, setQuery] = useState('');
+    const [filter, setFilter] = useState('');
     useEffect(() => {
         (async () => {
             const storedState = await getStoredTabState() as any;
@@ -50,6 +55,7 @@ const SearchHeader: FC<Props> = ({site}) => {
             })}
         </Selector>
         <QueryBox
+            placeholder="Query"
             value={query}
             onChange={e => {
                 const query = e.target.value;
@@ -60,8 +66,22 @@ const SearchHeader: FC<Props> = ({site}) => {
                 if (e.keyCode !== 13) {
                     return;
                 }
-                updateTabState({tagSummary: null});
-                sendTabMessage('SEARCH')
+                updateTabState({tagSummary: null, filter: null});
+                sendTabMessage('SEARCH');
+            }}
+        />
+        <FilterBox
+            placeholder="Filter"
+            value={filter}
+            onChange={e => {
+                const filter = e.target.value;
+                setFilter(filter);
+            }}
+            onKeyDown={e => {
+                if (e.keyCode !== 13) {
+                    return;
+                }
+                updateTabState({filter});
             }}
         />
     </Header>

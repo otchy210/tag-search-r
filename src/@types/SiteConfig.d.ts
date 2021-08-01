@@ -17,6 +17,8 @@ type TagCount = {[tag: string]: number};
 
 type TagSummary = {[tagTypeKey: string]: TagCount};
 
+type FilterTexts = {[filterType: string]: string};
+
 interface SiteConfig {
     key: string;
     title: string;
@@ -25,10 +27,12 @@ interface SiteConfig {
     maxPage: number;
     itemUrl: string;
     tagTypes: TagType[];
+    fileds: string[];
     findResultList: (body: HTMLElement) => HTMLElement | null;
     findResultItems: (list: HTMLElement) => HTMLElement[];
     appendResultItems: (list: HTMLElement, items: HTMLElement[]) => void;
     getItemKey: (item: HTMLElement) => string;
     getTags: (tagType: TagType, body: HTMLElement) => string[];
+    getFilterTexts: (item: HTMLElement) => FilterTexts;
     sortTags: (tagType: TagType, tagCount: TagCount) => [string, number][];
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDom from 'react-dom';
-import { cacheItemTagMap, getCachedItemTagMap, getStoredTabState, updateTabState } from "../common";
+import { cacheFilterTexts, cacheItemTagMap, getCachedFilterTexts, getCachedItemTagMap, getStoredTabState, updateTabState } from "../common";
+import { TextSearch } from "../text-search/TextSearch";
 import Pane from "./Pane";
 
 type MessageListenerCallback = (response?: any) => void;
@@ -12,10 +13,12 @@ const DEBUG = false;
 interface FilterState {
     fullTagSummary: TagSummary;
     selectedTags: SelectedTags;
+    filter: string;
 }
 const filterState: FilterState = {
     fullTagSummary: {},
-    selectedTags: []
+    selectedTags: [],
+    filter: '',
 };
 
 const getSearchContextFromStoredState = (site: SiteConfig, storedState: any): SearchContext => {
@@ -59,7 +62,10 @@ const fetchBody = async (url: string): Promise<HTMLElement> => {
     return dom.body;
 }
 
-const keepSearchingIfNeeded = async (site: SiteConfig) => {
+const keepSearchingIfNeeded = async (site: SiteConfig): Promise<{
+    allItemTagMap: {[itemKey: string]: TagMap},
+    textSearch: TextSearch
+} | undefined> => {
     const storedState = await getStoredTabState() as any;
     const searchState = storedState?.searchState ?? '';
     if (searchState !== 'init') {
@@ -105,13 +111,17 @@ const keepSearchingIfNeeded = async (site: SiteConfig) => {
         });
     };
     const allItemTagMap: {[itemKey: string]: TagMap} = {};
+    const textSearch: TextSearch = new TextSearch(site.fileds);
     for (let i = 0; i < itemKeys.length; i++) {
         await updateTabState({searchProgress: `item: ${i+1}/${itemKeys.length}`});
         const itemKey = itemKeys[i];
         const cachedItemTagMap = await getCachedItemTagMap(site.key, itemKey) as TagMap;
-        if (cachedItemTagMap) {
+        const cachedFilterTexts = await getCachedFilterTexts(site.key, itemKey) as FilterTexts;
+        DEBUG && console.log({cachedItemTagMap, cachedFilterTexts});
+        if (cachedItemTagMap && cachedFilterTexts) {
             allItemTagMap[itemKey] = cachedItemTagMap;
             handleTagMap(cachedItemTagMap);
+            textSearch.add(itemKey, cachedFilterTexts);
             continue;
         }
         const url = site.itemUrl.replace('{itemKey}', itemKey);
@@ -121,13 +131,19 @@ const keepSearchingIfNeeded = async (site: SiteConfig) => {
             const tags = site.getTags(tagType, itemBody);
             tagMap[tagType.key] = tags;
         });
+        DEBUG && console.log({tagMap});
         await cacheItemTagMap(site.key, itemKey, tagMap);
         allItemTagMap[itemKey] = tagMap;
         handleTagMap(tagMap);
+
+        const filterTexts = site.getFilterTexts(itemBody);
+        DEBUG && console.log({filterTexts});
+        await cacheFilterTexts(site.key, itemKey, filterTexts);
+        textSearch.add(itemKey, filterTexts);
     }
     filterState.fullTagSummary = tagSummary;
     await updateTabState({searchState: '', searchProgress: '', tagSummary});
-    return allItemTagMap;
+    return {allItemTagMap, textSearch};
 };
 
 const isItemSelected = (selectedTags: SelectedTags, tagMap: TagMap): boolean => {
@@ -140,32 +156,49 @@ const isItemSelected = (selectedTags: SelectedTags, tagMap: TagMap): boolean => 
     return true;
 };
 
-const filterItems = async (site: SiteConfig, allItemTagMap: {[itemKey: string]: TagMap} | undefined) => {
+const filterItems = async (
+    site: SiteConfig,
+    allItemTagMap: {[itemKey: string]: TagMap} | undefined,
+    textSearch: TextSearch | undefined
+) => {
     const storedState = await getStoredTabState() as any;
     const selectedTags = storedState?.selectedTags ?? [];
-    if (filterState.selectedTags.length === selectedTags.length) {
+    const filter = storedState?.filter ?? '';
+    const tagsChanged = filterState.selectedTags.length !== selectedTags.length;
+    const filterChanged = filterState.filter !== filter.length;
+    if (!tagsChanged && !filterChanged) {
         return;
     }
     filterState.selectedTags = selectedTags;
+    filterState.filter = filter;
+
+    if (!allItemTagMap) {
+        throw new Error('allItemTagMap not defined')
+    }
+    if (!textSearch) {
+        throw new Error('textSearch not defined')
+    }
+
     const list = site.findResultList(document.body);
     if (list === null) {
         throw new Error(`List not found`);
     }
+
     const items = site.findResultItems(list);
     const shownItems = [];
     const hiddenItems = [];
-    if (selectedTags.length === 0) {
+    if (selectedTags.length === 0 && filter.length === 0) {
         items.forEach(item => {
             shownItems.push(item);
         });
     } else {
-        if (!allItemTagMap) {
-            throw new Error('allItemTagMap not defined')
-        }
+        const searchResult = textSearch.search(filter);
         for (const item of items) {
             const itemKey = site.getItemKey(item);
             const tagMap = allItemTagMap[itemKey];
-            if (isItemSelected(selectedTags, tagMap)) {
+            const tagMatched = selectedTags.length === 0 || isItemSelected(selectedTags, tagMap);
+            const filterMatched = filter.length === 0 || searchResult[itemKey];
+            if (tagMatched && filterMatched) {
                 shownItems.push(item);
             } else {
                 hiddenItems.push(item);
@@ -190,6 +223,8 @@ export const init = async (site: SiteConfig): Promise<void> => {
     ReactDom.render(<Pane site={site} />, tsrRoot);
 
     let allItemTagMap: {[itemKey: string]: TagMap} | undefined;
+    let textSearch: TextSearch | undefined;
+    let searchRedy = false;
     chrome.runtime.onMessage.addListener((request, _, callback: MessageListenerCallback) => {
         const {action} = request;
         switch(action) {
@@ -197,11 +232,20 @@ export const init = async (site: SiteConfig): Promise<void> => {
                 search(site, callback);
                 break;
             case 'PING_TAB_STATE_STORED':
-                filterItems(site, allItemTagMap);
+                if (!searchRedy) {
+                    break;
+                }
+                filterItems(site, allItemTagMap, textSearch);
                 break;
         }
         return true; // keep message port opened until callback called
     });
 
-    allItemTagMap = await keepSearchingIfNeeded(site);
+    const searchResult = await keepSearchingIfNeeded(site);
+    DEBUG && console.log({searchResult});
+    if (searchResult) {
+        allItemTagMap = searchResult.allItemTagMap;
+        textSearch = searchResult.textSearch;
+        searchRedy = true;
+    }
 };

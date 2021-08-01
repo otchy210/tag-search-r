@@ -43,17 +43,28 @@ const getStorage = (key: string): JsonSerializable | null => {
     }
     return JSON.parse(stringValue);
 }
-const getCacheKey = (siteKey: string, itemKey: string): string => {
-    return `${siteKey}::${itemKey}`;
+const getCacheKey = (siteKey: string, cacheType: string, itemKey: string): string => {
+    return `${siteKey}::${cacheType}::${itemKey}`;
 }
+
 const cacheItemTagMap = async (siteKey: string, itemKey: string, tagMap: TagMap) => {
-    const cacheKey = getCacheKey(siteKey, itemKey);
+    const cacheKey = getCacheKey(siteKey, 'tm', itemKey);
     setStorage(cacheKey, tagMap);
 };
 const getCachedItemTagMap = async (siteKey: string, itemKey: string, callback: MessageCallback) => {
-    const cacheKey = getCacheKey(siteKey, itemKey);
+    const cacheKey = getCacheKey(siteKey, 'tm', itemKey);
     const tagMap = getStorage(cacheKey);
     callback(tagMap);
+};
+
+const cacheFilterTexts = async (siteKey: string, itemKey: string, filterTexts: FilterTexts) => {
+    const cacheKey = getCacheKey(siteKey, 'ft', itemKey);
+    setStorage(cacheKey, filterTexts);
+};
+const getCachedFilterTexts = async (siteKey: string, itemKey: string, callback: MessageCallback) => {
+    const cacheKey = getCacheKey(siteKey, 'ft', itemKey);
+    const filterTexts = getStorage(cacheKey);
+    callback(filterTexts);
 };
 
 const handleRegularMessage = (action: MessageAction, payload: any, callback: MessageCallback) => {
@@ -72,6 +83,13 @@ const handleRegularMessage = (action: MessageAction, payload: any, callback: Mes
             break;
         case 'GET_CACHED_ITEM_TAG_MAP':
             getCachedItemTagMap(payload.siteKey, payload.itemKey, callback);
+            break;
+        case 'CACHE_FILTER_TEXTS':
+            cacheFilterTexts(payload.siteKey, payload.itemKey, payload.filterTexts);
+            callback({});
+            break;
+        case 'GET_CACHED_FILTER_TEXTS':
+            getCachedFilterTexts(payload.siteKey, payload.itemKey, callback);
             break;
     }
 };

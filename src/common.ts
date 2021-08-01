@@ -35,6 +35,14 @@ export const getCachedItemTagMap = (siteKey: string, itemKey: string): Promise<J
     return sendMessage('GET_CACHED_ITEM_TAG_MAP', {siteKey, itemKey});
 };
 
+export const cacheFilterTexts = async (siteKey: string, itemKey: string, filterTexts: FilterTexts) => {
+    return sendMessage('CACHE_FILTER_TEXTS', {siteKey, itemKey, filterTexts});
+}
+
+export const getCachedFilterTexts = async (siteKey: string, itemKey: string): Promise<JsonSerializable> => {
+    return sendMessage('GET_CACHED_FILTER_TEXTS', {siteKey, itemKey});
+};
+
 export const sortTagsByCount = (tagCount: TagCount): [string, number][] => {
     return Object.entries(tagCount).sort((left, right) => {
         const diff = right[1] - left[1];
