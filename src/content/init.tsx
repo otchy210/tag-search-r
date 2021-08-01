@@ -118,7 +118,10 @@ const keepSearchingIfNeeded = async (site: SiteConfig): Promise<{
         const cachedItemTagMap = await getCachedItemTagMap(site.key, itemKey) as TagMap;
         const cachedFilterTexts = await getCachedFilterTexts(site.key, itemKey) as FilterTexts;
         DEBUG && console.log({cachedItemTagMap, cachedFilterTexts});
-        if (cachedItemTagMap && cachedFilterTexts) {
+        if (
+            cachedItemTagMap && Object.keys(cachedItemTagMap).length > 0 &&
+            cachedFilterTexts && Object.keys(cachedFilterTexts).length > 0
+        ) {
             allItemTagMap[itemKey] = cachedItemTagMap;
             handleTagMap(cachedItemTagMap);
             textSearch.add(itemKey, cachedFilterTexts);
