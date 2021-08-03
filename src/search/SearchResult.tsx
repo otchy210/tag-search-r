@@ -3,6 +3,8 @@ import styled from "styled-components";
 import { getStoredTabState } from "../common";
 import SearchTags from "./SearchTags";
 
+const DEBUG = false;
+
 const SearchInProgress = styled.div`
     margin: 0;
     padding: 0.25em 0.5em;
@@ -20,6 +22,7 @@ const SearchResult: FC<Props> = ({site}) => {
     useEffect(() => {
         const updateState = async () => {
             const storedState = await getStoredTabState() as any;
+            DEBUG && console.log({storedState});
             const storedSearchState = storedState?.searchState ?? '';
             const storedSearchProgress = storedState?.searchProgress ?? '';
             const storedTagSummary = storedState?.tagSummary ?? null;

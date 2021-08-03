@@ -21,7 +21,7 @@ export class TextSearch {
             if (fieldId < 0) {
                 throw new Error(`Unknown field: ${field}`);
             }
-            this.addText(docId, fieldId, text);
+            this.addText(docId, fieldId, text.toLocaleLowerCase());
         })
     }
 
@@ -47,7 +47,7 @@ export class TextSearch {
     }
 
     public search(query: string): SearchResult {
-        const byteArray = toCodePointByteArray(query);
+        const byteArray = toCodePointByteArray(query.toLocaleLowerCase());
         const resultFieldMap = new Map<number, Set<number>>();
         for (let i = 0; i < byteArray.length - 1; i++) {
             const firstByte = byteArray[i];
